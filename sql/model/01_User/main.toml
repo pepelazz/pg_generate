@@ -1,0 +1,44 @@
+docType = "User"
+
+tableName ="\"user\""
+
+fields = [
+    {name="id",                 type="serial"},
+    {name="username",           type="char", size=100,      ext="not null"},
+    {name="telegram_chat_id",   type="char", size=100,      ext="not null unique"},
+    {name="name_first",         type="char", size=60},
+    {name="name_last",          type="char", size=60},
+    {name="fullname",           type="char", size=120},
+    {name="login",              type="char", size=100,      ext="unique"},
+    {name="password",           type="char", size=270},
+    {name="avatar",             type="char", size=500},
+    {name="state",              type="enum", enumName="state", default="new"},
+    {name="role",               type="enum", enumName="role",  default="student"},
+    {name="auth_user_id",       type="int" , comment="пользователь, который авторизовал этого пользователя"},
+    {name="is_token_valid",     type="bool",        ext="default true"},
+    {name="created_at",         type="timestamp",   ext="with time zone"},
+    {name="updated_at",         type="timestamp",   ext="with time zone"},
+    {name="deleted",            type="bool",        ext="not null default false"}
+]
+
+fkConstraints = [
+    {fld="auth_user_id", ref="\"user\"", fk="id"}
+]
+
+enums = [
+    {name="state", value=["new", "waitAuth", "checked", "unknown", "blocked"]},
+    {name="role", value=["admin", "student"]}
+]
+
+triggers = [
+    {name="user_created", when="before insert or update", ref="for each row", funcName="builtin_fld_update"},
+    {name="user_change_state", when="before update", ref="for each row", funcName="trigger_user_change_state"},
+    {name="user_fullname_update", when="before insert or update", ref="for each row", funcName="trigger_user_fullname_update"},
+    {name="user_rbq_event", when="after insert or update", ref="for each row", funcName="rabbit_event"}
+]
+
+methods = [
+    "user_get",
+    "user_list",
+    "user_update"
+]

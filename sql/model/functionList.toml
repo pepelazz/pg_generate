@@ -1,0 +1,25 @@
+
+funcList = [
+    #----- config --------
+    "addExtensions",
+    "addDictionaries",
+    #----- triggers --------
+    "triger_created_updated",
+    "trigger_send_rbq_message",
+    "triger_rabbit_event",
+    "trigger_user_change_state", # триггер при изменении статуса пользователя
+    "trigger_user_fullname_update", # триггер обновления поля fullname
+    "trigger_survey_qstn_fts_index", # триггер для обновления индекса для полнотекстового поиска по таблице survey_qstn
+    #----- util --------
+    "build_query_part_for_list",
+    "where_str_build",
+    "update_str_from_json",
+    #----- register --------
+    "register_get_positions_for_place", # получения списка должностей для данного заведения
+    "register_new_user_change_state", # обновления статуса вновь зарегестрировавшегося пользователя
+    "register_update_user", # обновление информации о пользователе после авторизации (прописываем связи user<->positions и пр)
+    "user_login", # обновления статуса вновь зарегестрировавшегося пользователя
+    #----- reports --------
+    "rating_total", #общий рейтинг пользователей
+    "rating_by_user", #рейтинг по конкретному пользователю
+]

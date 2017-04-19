@@ -1,0 +1,48 @@
+# Вопрос к заданию
+docType = "SurveyQstn"
+
+tableName ="survey_qstn"
+
+fields = [
+    {name="id",          type="serial"},
+    {name="survey_id",   type="int",         ext="not null"},
+    {name="state",       type="enum",        enumName="state", default="closed"},
+    {name="text",        type="text",        ext="not null"},
+    {name="type",        type="enum",        enumName="type", default="one_choice"},
+    {name="true_answer", type="text[]",      ext="not null"},
+    {name="regex",       type="text[]"},
+    {name="answer",      type="text[]",      comment="варианты ответа в случае если тип вопроса предполагает выбор из вариантов"},
+    {name="image",       type="text"},
+    {name="score",       type="double",      ext="DEFAULT 0"},
+    {name="options",     type="jsonb"},
+    {name="fts",         type="tsvector",    comment="колонка для полнотекстового поиска"},
+    {name="created_at",  type="timestamp",   ext="without time zone"},
+    {name="updated_at",  type="timestamp",   ext="without time zone"},
+    {name="deleted",     type="bool",        ext="not null default false"},
+]
+
+fkConstraints = [
+    {fld="survey_id", ref="survey", fk="id"},
+    {name="text_length_with_image_must_be_less_200", ext="CHECK (survey_qstn.image IS NULL OR char_length(survey_qstn.text) < 200)"}
+]
+
+enums = [
+    {name="state", value=["opened", "closed"]},
+    {name="type", value=["write_answer", "one_choice", "biathlon"]}
+]
+
+indexes = [
+    {name="survey_qstn_fts_index", fld=["fts"], using="GIN"}
+]
+
+triggers = [
+    {name="survey_qstn_created", when="before insert or update", ref="for each row", funcName="builtin_fld_update"},
+    {name="survey_qstn_rbq_event", when="after insert or update", ref="for each row", funcName="rabbit_event"},
+    {name="survey_qstn_fts_update", when="before insert or update", ref="for each row", funcName="survey_qstn_vector_update"}
+]
+
+methods = [
+    "survey_qstn_create",
+    "survey_qstn_list",
+    "survey_qstn_update"
+]

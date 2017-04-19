@@ -1,0 +1,15 @@
+#-- Таблица: места работы
+docType = "BusinessPlace"
+
+tableName ="business_place"
+
+fields = [
+    {name="id",         type="serial"},
+    {name="title",      type="char", size=100,      ext="not null"},
+    {name="title_en",   type="char", size=100,      ext="not null"},
+    {name="deleted",    type="bool",                ext="not null default false"}
+]
+
+indexes = [
+    {name="title_title_en", fld=["title", "title_en"], unique=true}
+]

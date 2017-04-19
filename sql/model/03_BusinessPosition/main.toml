@@ -1,0 +1,20 @@
+# Должность
+docType = "BusinessPosition"
+
+tableName ="business_position"
+
+fields = [
+    {name="id",         type="serial"},
+    {name="title",      type="char", size=100,      ext="not null"},
+    {name="place_id",   type="int",                 ext="not null"},
+    {name="deleted",    type="bool",                ext="not null default false"}
+]
+
+fkConstraints = [
+    {fld="place_id", ref="business_place", fk="id"}
+]
+
+indexes = [
+    {name="title_place_id", fld=["title", "place_id"], unique=true}
+]
+

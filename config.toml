@@ -1,0 +1,10 @@
+
+[postgres]
+user = "postgres"
+password = "ktulhu77"
+dbName = "test"
+url = "localhost:5432"
+modelDir = "./sql/model"
+viewDir = "./sql/view"
+templateDir = "./sql/template"
+#rbqExchangeName = "srp_academy"

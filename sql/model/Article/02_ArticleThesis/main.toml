@@ -1,0 +1,13 @@
+docType = "ArticleThesis"
+
+tableName ="article.thesis"
+
+fields = [
+    {name="id",                 type="serial"},
+    {name="title",              type="text",        ext="not null"},
+    {name="article_id",         type="int",         ext="not null"},
+]
+
+fkConstraints = [
+    {fld="article_id", ref="article.article", fk="id"},
+]
