@@ -1,4 +1,4 @@
-package main
+package pgGenerate
 
 import (
 	"fmt"
@@ -12,6 +12,7 @@ type TmplMain struct {
 	TomlTree      *toml.TomlTree
 	Enums         map[string][]string
 	TableName     string
+	TableComment  string
 	Fields        []TableField
 	FkConstraints []FkConstraints
 	Indexes       []TableIndex
@@ -86,6 +87,7 @@ func processFileMain(path string) (err error) {
 
 	t.createDocIfNotExist()
 	t.fillTableName()
+	t.fillTableComment()
 	t.fillEnums()
 	t.fillFields()
 	t.fillFkConstraints()
@@ -132,6 +134,12 @@ func (t *TmplMain) fillTableName() {
 		t.TableName = t.TomlTree.Get("tableName").(string)
 	} else {
 		checkErr(errors.New(fmt.Sprintf("In doc:'%s' missed field 'tableName'", t.DocType)), "")
+	}
+}
+
+func (t *TmplMain) fillTableComment() {
+	if t.TomlTree.Has("tableComment") {
+		t.TableComment = t.TomlTree.Get("tableComment").(string)
 	}
 }
 

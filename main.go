@@ -1,4 +1,4 @@
-package main
+package pgGenerate
 
 import (
 	"github.com/pelletier/go-toml"
@@ -10,6 +10,7 @@ import (
 	"github.com/lib/pq"
 	"os"
 	"log"
+	"strconv"
 )
 
 var (
@@ -23,7 +24,8 @@ type Config struct {
 	User            string
 	Password        string
 	DbName          string
-	Url             string
+	Host            string
+	Port            int64
 	ModelDir        string
 	ViewDir         string
 	TemplateDir     string
@@ -100,6 +102,10 @@ func main() {
 
 }
 
+func Start() {
+	main()
+}
+
 func readConfigFile() {
 	tree, err := toml.LoadFile("config.toml")
 	getFld := getTomlString(tree)
@@ -107,7 +113,15 @@ func readConfigFile() {
 	config.User = getFld("postgres.user")
 	config.Password = getFld("postgres.password")
 	config.DbName = getFld("postgres.dbName")
-	config.Url = getFld("postgres.url")
+	config.Host = getFld("postgres.host")
+	config.Port = tree.Get("postgres.port").(int64)
+	if len(os.Getenv("PG_PORT")) > 0 { // перезаписываем порт, если есть глобальная переменная (для docker-compose)
+		port, err := strconv.ParseInt(os.Getenv("PG_PORT"), 10, 64)
+		if err != nil {
+			return
+		}
+		config.Port = port
+	}
 	config.ModelDir = getFld("postgres.modelDir")
 	config.ViewDir = getFld("postgres.viewDir")
 	config.TemplateDir = getFld("postgres.templateDir")
@@ -120,9 +134,10 @@ func readConfigFile() {
 
 // функция создания базы данных (если не существует)
 func createDb() {
-	dbinfo := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", config.User, config.Password, config.Url, "template1")
+	dbinfo := fmt.Sprintf("postgres://%s:%s@%s:%v/%s?sslmode=disable", config.User, config.Password, config.Host, config.Port, "template1")
 	db, err := sql.Open("postgres", dbinfo)
-	checkErr(err, "createDb")
+	err = db.Ping()
+	checkErr(err, "Can't connect to postgres. Maybe wrong port.")
 	defer db.Close()
 
 	fmt.Printf("\nSTEP1: creating database... ")
@@ -143,7 +158,7 @@ func createDb() {
 
 // функция выполнения собранных скриптов
 func executeQuery(b []byte) {
-	dbinfo := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", config.User, config.Password, config.Url, config.DbName)
+	dbinfo := fmt.Sprintf("postgres://%s:%s@%s:%v/%s?sslmode=disable", config.User, config.Password, config.Host, config.Port, config.DbName)
 	//dbinfo := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.User, config.Password, config.DbName)
 	db, err := sql.Open("postgres", dbinfo)
 	checkErr(err, "executeQuery")

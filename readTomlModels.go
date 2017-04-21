@@ -1,4 +1,4 @@
-package main
+package pgGenerate
 
 import (
 	"path/filepath"

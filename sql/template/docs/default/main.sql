@@ -15,12 +15,13 @@ $$ LANGUAGE plpgsql;
 [[- end]]
 
 CREATE TABLE IF NOT EXISTS [[.TmplMain.TableName]] (
-[[- range $i, $fld := .TmplMain.Fields]][[if $i]],[[ if .Comment]]--[[.Comment]][[end]]
+[[- range $i, $fld := .TmplMain.Fields]][[if $i]],
 [[end]]
 [[if eq .Type "serial" -]]     [[- template "docFld_serial" . -]]    [[- end -]]
 [[if eq .Type "char" -]]       [[- template "docFld_char" . -]]      [[- end -]]
 [[if eq .Type "text" -]]       [[- template "docFld_text" . -]]      [[- end -]]
 [[if eq .Type "int" -]]        [[- template "docFld_int" . -]]       [[- end -]]
+[[if eq .Type "bigint" -]]     [[- template "docFld_bigint" . -]]    [[- end -]]
 [[if eq .Type "double" -]]     [[- template "docFld_double" . -]]    [[- end -]]
 [[if eq .Type "bool" -]]       [[- template "docFld_bool" . -]]      [[- end -]]
 [[if eq .Type "json" -]]       [[- template "docFld_json" . -]]      [[- end -]]
@@ -33,6 +34,11 @@ CREATE TABLE IF NOT EXISTS [[.TmplMain.TableName]] (
 [[if eq .Type "tsvector" -]]   [[- template "docFld_tsvector" . -]]    [[- end -]]
 [[ end -]]
 );
+
+-- комментарии к полям таблицы
+[[- range $i, $fld := .TmplMain.Fields]]
+[[ if .Comment]]  COMMENT ON COLUMN [[$TableName]].[[ .Name ]] IS '[[ .Comment ]]';  [[end]]
+[[end]]
 
 [[- range $e := .TmplMain.FkConstraints]]
 ALTER TABLE [[ $TableName ]] DROP CONSTRAINT IF EXISTS [[.Name]];
@@ -49,6 +55,7 @@ CREATE [[if .Unique]]UNIQUE[[end]] INDEX IF NOT EXISTS [[.Name]] ON [[$TableName
 [[ define "docFld_char" ]]      [[ .Name ]] CHARACTER VARYING([[.Size]]) [[ uppercase .Ext -]] [[- end -]]
 [[ define "docFld_text" ]]      [[ .Name ]] TEXT [[ uppercase .Ext -]] [[- end -]]
 [[ define "docFld_int" ]]       [[ .Name ]] INTEGER [[ uppercase .Ext -]] [[- end -]]
+[[ define "docFld_bigint" ]]    [[ .Name ]] BIGINT [[ uppercase .Ext -]] [[- end -]]
 [[ define "docFld_double" ]]    [[ .Name ]] DOUBLE PRECISION [[ uppercase .Ext -]] [[- end -]]
 [[ define "docFld_json" ]]      [[ .Name ]] JSON [[ uppercase .Ext -]] [[- end -]]
 [[ define "docFld_jsonb" ]]     [[ .Name ]] JSONB [[ uppercase .Ext -]] [[- end -]]
@@ -64,5 +71,7 @@ CREATE [[if .Unique]]UNIQUE[[end]] INDEX IF NOT EXISTS [[.Name]] ON [[$TableName
 [[- $enumName := printf "%s_%s" .DocTypeUnderscore (camelToSnake $Fld.Enum.Name) -]]
 [[- $Fld.Name ]] [[$enumName]] DEFAULT '[[$Fld.Enum.Default]]' :: [[$enumName]]
 [[- end -]]
+
+
 
 

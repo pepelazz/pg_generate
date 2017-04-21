@@ -1,4 +1,4 @@
-package main
+package pgGenerate
 
 import (
 	"github.com/pelletier/go-toml"
