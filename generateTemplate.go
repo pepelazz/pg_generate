@@ -43,21 +43,25 @@ func writeTemplateToFile(doc *Doc, tmplFileName string) ([]byte, error) {
 	funcs["dict"] = dict
 	tmpl := template.New("template").Funcs(funcs).Delims("[[", "]]")
 	// Шаг 1: загружаем дефолтные шаблоны
-	err := buildTmpl(tmpl, fmt.Sprintf("%s/docs/default", config.TemplateDir))
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("buildTmpl error: %s", err))
-	}
-	// Шаг 2: загружаем шаблоны для данного типа документа (если для данного типа документа создана директория),
-	// которые перезаписывают дефолтные
-	docTmplDir := fmt.Sprintf("%s/docs/%s", config.TemplateDir, doc.DocType)
-	if _, err := os.Stat(docTmplDir); err == nil {
-		err = buildTmpl(tmpl, docTmplDir)
+	for _, tmplPath := range config.TemplateDir {
+		err := buildTmpl(tmpl, fmt.Sprintf("%s/docs/default", tmplPath))
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("buildTmpl error: %s", err))
 		}
 	}
+	// Шаг 2: загружаем шаблоны для данного типа документа (если для данного типа документа создана директория),
+	// которые перезаписывают дефолтные
+	for _, tmplPath := range config.TemplateDir {
+		docTmplDir := fmt.Sprintf("%s/docs/%s", tmplPath, doc.DocType)
+		if _, err := os.Stat(docTmplDir); err == nil {
+			err = buildTmpl(tmpl, docTmplDir)
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("buildTmpl error: %s", err))
+			}
+		}
+	}
 	var tmplBytes bytes.Buffer
-	if err = tmpl.ExecuteTemplate(&tmplBytes, tmplFileName, doc); err != nil {
+	if err := tmpl.ExecuteTemplate(&tmplBytes, tmplFileName, doc); err != nil {
 		return nil, errors.New(fmt.Sprintf("ExecuteTemplate file %s. Error: %s", tmplFileName, err))
 	}
 

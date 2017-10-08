@@ -56,25 +56,26 @@ func buildSqlFuncTmpl() (err error) {
 	funcs["dict"] = dict
 	funcs["rightsTmpl"] = rightsTmpl
 	sqlFuncTml = *template.New("template").Funcs(funcs).Delims("[[", "]]")
-	path := fmt.Sprintf("%s/function", config.TemplateDir)
-	err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-		if strings.HasSuffix(path, ".sql") {
-			_, err = sqlFuncTml.ParseFiles(path)
-			if err != nil {
-				return errors.New(fmt.Sprintf("Read template files from directory '%s: %s'.", path, err))
+	for _, dir := range config.TemplateDir {
+		path := fmt.Sprintf("%s/function", dir)
+		err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+			if strings.HasSuffix(path, ".sql") {
+				_, err = sqlFuncTml.ParseFiles(path)
+				if err != nil {
+					return errors.New(fmt.Sprintf("Read template files from directory '%s: %s'.", path, err))
+				}
+				return err
 			}
 			return err
-		}
-		return err
-	})
+		})
+	}
 	return err
 }
 
-func addToFuncListDocMethods()  {
+func addToFuncListDocMethods() {
 	for _, doc := range docModels.Docs {
 		for _, m := range doc.TmplMain.Methods {
 			*docModels.Funcs = append(*docModels.Funcs, m)
 		}
 	}
 }
-

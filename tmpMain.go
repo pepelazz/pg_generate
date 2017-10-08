@@ -9,7 +9,7 @@ import (
 
 type TmplMain struct {
 	DocType       string
-	TomlTree      *toml.TomlTree
+	Tree          *toml.Tree
 	Enums         map[string][]string
 	TableName     string
 	TableComment  string
@@ -17,6 +17,7 @@ type TmplMain struct {
 	FkConstraints []FkConstraints
 	Indexes       []TableIndex
 	Triggers      []Trigger
+	AlterScripts  []AlterScript
 	Methods       []string
 	Rights        []DocRight
 }
@@ -59,6 +60,10 @@ type Trigger struct {
 	TableName string //поле заполняется перед генерацией шаблона
 }
 
+type AlterScript struct {
+	Name    string
+}
+
 type DocRight struct {
 	Method string
 	Allow  []string
@@ -75,9 +80,9 @@ func processFileMain(path string) (err error) {
 		}
 		return
 	}
-	t := TmplMain{TomlTree:tree}
+	t := TmplMain{Tree:tree}
 
-	if !t.TomlTree.Has("docType") {
+	if !t.Tree.Has("docType") {
 		return errors.New(fmt.Sprintf("Uknown docType in file %s. Write docType name in file.", path))
 	}
 	t.writeDocType()
@@ -93,6 +98,7 @@ func processFileMain(path string) (err error) {
 	t.fillFkConstraints()
 	t.fillIndex()
 	t.fillTriggers()
+	t.fillAlterScripts()
 	t.fillMethods()
 	t.fillRights()
 
@@ -100,7 +106,7 @@ func processFileMain(path string) (err error) {
 }
 
 func (t *TmplMain) writeDocType() {
-	t.DocType = t.TomlTree.Get("docType").(string)
+	t.DocType = t.Tree.Get("docType").(string)
 }
 
 func (t *TmplMain) createDocIfNotExist() {
@@ -118,8 +124,8 @@ func (t *TmplMain) createDocIfNotExist() {
 }
 
 func (t *TmplMain) fillEnums() {
-	if t.TomlTree.Has("enums") {
-		data := t.TomlTree.Get("enums").([]*toml.TomlTree)
+	if t.Tree.Has("enums") {
+		data := t.Tree.Get("enums").([]*toml.Tree)
 		m := make(map[string][]string)
 		for _, res := range data {
 			r := res.ToMap()
@@ -130,22 +136,22 @@ func (t *TmplMain) fillEnums() {
 }
 
 func (t *TmplMain) fillTableName() {
-	if t.TomlTree.Has("tableName") {
-		t.TableName = t.TomlTree.Get("tableName").(string)
+	if t.Tree.Has("tableName") {
+		t.TableName = t.Tree.Get("tableName").(string)
 	} else {
 		checkErr(errors.New(fmt.Sprintf("In doc:'%s' missed field 'tableName'", t.DocType)), "")
 	}
 }
 
 func (t *TmplMain) fillTableComment() {
-	if t.TomlTree.Has("tableComment") {
-		t.TableComment = t.TomlTree.Get("tableComment").(string)
+	if t.Tree.Has("tableComment") {
+		t.TableComment = t.Tree.Get("tableComment").(string)
 	}
 }
 
 func (t *TmplMain) fillFields() {
-	if t.TomlTree.Has("fields") {
-		data := t.TomlTree.Get("fields").([]*toml.TomlTree)
+	if t.Tree.Has("fields") {
+		data := t.Tree.Get("fields").([]*toml.Tree)
 		arr := make([]TableField, len(data))
 		for i, res := range data {
 			r := res.ToMap()
@@ -177,8 +183,8 @@ func (t *TmplMain) fillFields() {
 }
 
 func (t *TmplMain) fillFkConstraints() {
-	if t.TomlTree.Has("fkConstraints") {
-		data := t.TomlTree.Get("fkConstraints").([]*toml.TomlTree)
+	if t.Tree.Has("fkConstraints") {
+		data := t.Tree.Get("fkConstraints").([]*toml.Tree)
 		arr := make([]FkConstraints, len(data))
 		for i, res := range data {
 			r := res.ToMap()
@@ -208,8 +214,8 @@ func (t *TmplMain) fillFkConstraints() {
 }
 
 func (t *TmplMain) fillIndex() {
-	if t.TomlTree.Has("indexes") {
-		data := t.TomlTree.Get("indexes").([]*toml.TomlTree)
+	if t.Tree.Has("indexes") {
+		data := t.Tree.Get("indexes").([]*toml.Tree)
 		arr := make([]TableIndex, len(data))
 		for i, res := range data {
 			r := res.ToMap()
@@ -233,8 +239,8 @@ func (t *TmplMain) fillIndex() {
 }
 
 func (t *TmplMain) fillTriggers() {
-	if t.TomlTree.Has("triggers") {
-		data := t.TomlTree.Get("triggers").([]*toml.TomlTree)
+	if t.Tree.Has("triggers") {
+		data := t.Tree.Get("triggers").([]*toml.Tree)
 		arr := make([]Trigger, len(data))
 		for i, res := range data {
 			r := res.ToMap()
@@ -251,8 +257,8 @@ func (t *TmplMain) fillTriggers() {
 }
 
 func (t *TmplMain) fillMethods() {
-	if t.TomlTree.Has("methods") {
-		data := t.TomlTree.Get("methods").([]interface{})
+	if t.Tree.Has("methods") {
+		data := t.Tree.Get("methods").([]interface{})
 		arr := make([]string, len(data))
 		for i, res := range data {
 			arr[i] = res.(string)
@@ -261,9 +267,20 @@ func (t *TmplMain) fillMethods() {
 	}
 }
 
+func (t *TmplMain) fillAlterScripts() {
+	if t.Tree.Has("alterScripts") {
+		data := t.Tree.Get("alterScripts").([]interface{})
+		arr := make([]AlterScript, len(data))
+		for i, res := range data {
+			arr[i] = AlterScript{res.(string)}
+		}
+		t.AlterScripts = arr
+	}
+}
+
 func (t *TmplMain) fillRights() {
-	if t.TomlTree.Has("rights") {
-		data := t.TomlTree.Get("rights").([]*toml.TomlTree)
+	if t.Tree.Has("rights") {
+		data := t.Tree.Get("rights").([]*toml.Tree)
 		arr := make([]DocRight, len(data))
 		for i, res := range data {
 			r := res.ToMap()

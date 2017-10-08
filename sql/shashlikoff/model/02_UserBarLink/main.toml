@@ -1,0 +1,34 @@
+docType = "UserBarLink"
+tableComment = "Связь между барами и пользователем"
+
+tableName ="user_bar_link"
+
+fields = [
+    {name="id",                 type="serial"},
+    {name="user_id",            type="bigint", ext="not null",              comment="ссылка на пользователя"},
+    {name="bar_id",             type="int", ext="not null",                 comment="ссылка на бар"},
+    {name="position",           type="char", size=100,                      comment="должность"},
+    {name="is_chief",           type="bool", ext="not null default false",  comment="является ли директором бара"},
+    {name="updated_at",         type="timestamp",   ext="without time zone"},
+    {name="created_at",         type="timestamp",   ext="without time zone"},
+    {name="deleted",            type="bool",        ext="not null default false"},
+]
+
+fkConstraints = [
+    {fld="user_id", ref="\"user\"", fk="id"},
+    {fld="bar_id", ref="bar", fk="id"},
+    {name="user_bar_link_exist", ext="UNIQUE (user_id, bar_id)"},
+]
+
+triggers = [
+    {name="user_bar_link_created", when="before insert or update", ref="for each row", funcName="builtin_fld_update"},
+    {name="user_bar_link_update", when="after insert or update", ref="for each row", funcName="user_bar_link_update"},
+]
+
+methods = [
+    "register_new_user",
+    "register_new_user_chief_answer",
+]
+
+
+

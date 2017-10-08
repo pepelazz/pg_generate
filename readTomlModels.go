@@ -3,7 +3,7 @@ package pgGenerate
 import (
 	"path/filepath"
 	"os"
-	"github.com/labstack/gommon/log"
+	"log"
 	"strings"
 	"fmt"
 	"github.com/pkg/errors"

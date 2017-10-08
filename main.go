@@ -26,9 +26,9 @@ type Config struct {
 	DbName          string
 	Host            string
 	Port            int64
-	ModelDir        string
-	ViewDir         string
-	TemplateDir     string
+	ModelDir        []string
+	ViewDir         []string
+	TemplateDir     []string
 	RbqExchangeName string
 }
 
@@ -46,29 +46,37 @@ type Doc struct {
 	TmplMain *TmplMain
 }
 
-func main() {
+func main(isPrintFiles bool) {
 	// Шаг1: читаем toml файлы с конфигом
 	readConfigFile()
 	checkSourceDirExist()
 
 	// Шаг2: читаем toml файлы с моделями
-	err := filepath.Walk(config.ModelDir, readTomlModelDir())
-	checkErr(err, "filepath.Walk")
+	for _, v := range config.ModelDir {
+		err := filepath.Walk(v, readTomlModelDir())
+		checkErr(err, "filepath.Walk")
+	}
 
 	// Шаг3.1: создаем sql скрипт для создания схем
 	resultSchema, err := generateSchemaFile()
 	checkErr(err, "generateSchemaFiles")
-	ioutil.WriteFile("generate_schema.sql", resultSchema, 0644)
+	if isPrintFiles {
+		ioutil.WriteFile("generate_schema.sql", resultSchema, 0644)
+	}
 
 	// Шаг3.2: создаем sql скрипт для создания таблиц
 	resultModel, err := generateModelFiles()
 	checkErr(err, "generateModelFiles")
-	ioutil.WriteFile("generate_query.sql", resultModel, 0644)
+	if isPrintFiles {
+		ioutil.WriteFile("generate_query.sql", resultModel, 0644)
+	}
 
 	// Шаг3.3: создаем sql скрипт для создания view
 	resultView, err := generateViewFiles()
-	checkErr(err, "generateModelFiles")
-	ioutil.WriteFile("generate_view.sql", resultView, 0644)
+	checkErr(err, "generateViewFiles")
+	if isPrintFiles {
+		ioutil.WriteFile("generate_view.sql", resultView, 0644)
+	}
 
 	// Шаг3.4: создаем sql скрипт для функций (stored procedure)
 	err = buildSqlFuncTmpl()
@@ -76,7 +84,9 @@ func main() {
 
 	resultFunc, err := generateSqlFuncs()
 	checkErr(err, "generateSqlFuncs")
-	ioutil.WriteFile("generate_func.sql", resultFunc, 0644)
+	if isPrintFiles {
+		ioutil.WriteFile("generate_func.sql", resultFunc, 0644)
+	}
 
 	// Шаг3.5: создаем sql скрипт для триггеров (он должен идти последним, потому что ссылается и на таблицы и на функции)
 	resultTriggers, err := generateSqlTriggers()
@@ -92,7 +102,9 @@ func main() {
 	result = append(result, resultFunc...)
 	result = append(result, resultTriggers...)
 	result = append(result, resultInitData...)
-	ioutil.WriteFile("generate_full.sql", result, 0644)
+	if isPrintFiles {
+		ioutil.WriteFile("generate_full.sql", result, 0644)
+	}
 
 	// Шаг5: Создаем базу если не существует
 	createDb()
@@ -102,29 +114,31 @@ func main() {
 
 }
 
-func Start() {
-	main()
+func Start(isPrintFiles bool) {
+	main(isPrintFiles)
 }
 
 func readConfigFile() {
 	tree, err := toml.LoadFile("config.toml")
 	getFld := getTomlString(tree)
+	getArrayFld := getTomlArray(tree)
 	checkErr(err, "Read config.tmpl")
 	config.User = getFld("postgres.user")
 	config.Password = getFld("postgres.password")
 	config.DbName = getFld("postgres.dbName")
 	config.Host = getFld("postgres.host")
 	config.Port = tree.Get("postgres.port").(int64)
-	if len(os.Getenv("PG_PORT")) > 0 { // перезаписываем порт, если есть глобальная переменная (для docker-compose)
+	if len(os.Getenv("PG_PORT")) > 0 {
+		// перезаписываем порт, если есть глобальная переменная (для docker-compose)
 		port, err := strconv.ParseInt(os.Getenv("PG_PORT"), 10, 64)
 		if err != nil {
 			return
 		}
 		config.Port = port
 	}
-	config.ModelDir = getFld("postgres.modelDir")
-	config.ViewDir = getFld("postgres.viewDir")
-	config.TemplateDir = getFld("postgres.templateDir")
+	config.ModelDir = getArrayFld("postgres.modelDir")
+	config.ViewDir = getArrayFld("postgres.viewDir")
+	config.TemplateDir = getArrayFld("postgres.templateDir")
 	if tree.Has("postgres.rbqExchangeName") {
 		config.RbqExchangeName = getFld("postgres.rbqExchangeName")
 	}
@@ -190,7 +204,7 @@ func executeQuery(b []byte) {
 	fmt.Printf("successfully completed \n")
 }
 
-func getTomlString(tree *toml.TomlTree) func(string) string {
+func getTomlString(tree *toml.Tree) func(string) string {
 	return func(fld string) string {
 		switch v := tree.Get(fld).(type) {
 		case string:
@@ -205,3 +219,28 @@ func getTomlString(tree *toml.TomlTree) func(string) string {
 		return ""
 	}
 }
+
+func getTomlArray(tree *toml.Tree) func(string) []string {
+	return func(fld string) []string {
+		switch v := tree.Get(fld).(type) {
+		case []interface{}:
+			arr := []string{}
+			for _, s := range v {
+				res, ok := s.(string)
+				if !ok {
+					log.Fatalf("In config wrong type field: %s. Must be array of string", fld)
+				}
+				arr = append(arr, res)
+			}
+			return arr
+		case nil:
+			log.Fatalf("In config missed field: %s", fld)
+		default:
+			log.Fatalf("In config wrong type field: %s", fld)
+
+		}
+
+		return []string{}
+	}
+}
+

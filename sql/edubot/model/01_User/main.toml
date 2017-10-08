@@ -1,0 +1,47 @@
+docType = "User"
+tableComment = "Таблица пользователей"
+
+tableName ="\"user\""
+
+fields = [
+    {name="id",                 type="bigint", ext="not null unique", comment="ID пользователя в телеграмм" },
+    {name="username",           type="char", size=100, comment="Уникальное имя пользователя в телеграмм" },
+    {name="last_name",          type="char", size=100, comment="Фамилия"},
+    {name="first_name",         type="char", size=100, comment="Имя" },
+    {name="fullname",           type="char", size=200, comment="Полное имя"},
+    {name="state",              type="enum", enumName="state", default="inGame"},
+    {name="role",               type="enum", enumName="role",  default="student", comment="Роль в системе"},
+    {name="avatar",             type="char", size=500, comment="Ссылка на аватарку"},
+    {name="last_name_reg",      type="char", size=100, comment="Фамилия из формы регистрации"},
+    {name="first_name_reg",     type="char", size=100, comment="Имя из формы регистрации"},
+    {name="mid_name_reg",       type="char", size=100, comment="Отчество из формы регистрации"},
+    {name="auth_token",         type="char", size=50,  comment="Токен для авторизации"},
+    {name="options",            type="jsonb",          comment="Разные дополнительные параметры"},
+    {name="created_at",         type="timestamp",   ext="with time zone"},
+    {name="updated_at",         type="timestamp",   ext="with time zone"},
+    {name="deleted",            type="bool",        ext="not null default false"},
+]
+
+enums = [
+    {name="state", value=["inGame", "blocked"]},
+    {name="role", value=["admin", "student"]},
+]
+
+triggers = [
+    {name="user_created", when="before insert or update", ref="for each row", funcName="builtin_fld_update"},
+    {name="user_fullname_update", when="before insert or update", ref="for each row", funcName="trigger_user_fullname_update"},
+]
+
+methods = [
+    "user_update",
+    "user_list",
+]
+
+alterScripts = [
+     "alter table \"user\" add column if not exists last_name_reg varchar(100);",
+     "alter table \"user\" add column if not exists first_name_reg varchar(100);",
+     "alter table \"user\" add column if not exists mid_name_reg varchar(100);",
+     "alter table \"user\" add column if not exists auth_token varchar(50);",
+     "alter table \"user\" add column if not exists avatar varchar(500);",
+     "alter table \"user\" add column if not exists options jsonb;",
+]

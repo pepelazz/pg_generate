@@ -19,9 +19,11 @@ func checkSourceDirExist() {
 	checkDirExist(config.TemplateDir, "Create directory for 'template' files.")
 }
 
-func checkDirExist(path string, msg string) {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		log.Fatal(fmt.Sprintf("Directory %s not exist. %s\n", path, msg))
+func checkDirExist(pathArr []string, msg string) {
+	for _, path := range pathArr {
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			log.Fatal(fmt.Sprintf("Directory %s not exist. %s\n", path, msg))
+		}
 	}
 }
 

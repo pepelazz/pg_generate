@@ -37,7 +37,9 @@ func processFileSchemaList(path string) (err error) {
 func generateSchemaFile() (result []byte, err error) {
 
 	tmpl := template.New("template").Delims("[[", "]]")
-	path := fmt.Sprintf("%s/docs/default/schema.sql", config.TemplateDir)
+	// берем шаблон из последней указанной директории, на случай переопределения в конечном проекте
+	lastPath := config.TemplateDir[len(config.TemplateDir)-1]
+	path := fmt.Sprintf("%s/docs/default/schema.sql",lastPath)
 
 	// функция сборки html темплейтов для данного типа документа (читаем все файлы из указанной директории)
 	_, err = tmpl.ParseFiles(path)

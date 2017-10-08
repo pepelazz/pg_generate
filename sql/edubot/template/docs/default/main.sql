@@ -35,10 +35,17 @@ CREATE TABLE IF NOT EXISTS [[.TmplMain.TableName]] (
 [[ end -]]
 );
 
+-- скрипты по изменению таблицы AlterScripts
+[[ range $e := .TmplMain.AlterScripts]]
+[[.Name]]
+[[- end ]]
+
 -- комментарии к полям таблицы
-[[- range $i, $fld := .TmplMain.Fields]]
-[[ if .Comment]]  COMMENT ON COLUMN [[$TableName]].[[ .Name ]] IS '[[ .Comment ]]';  [[end]]
-[[end]]
+[[range $i, $fld := .TmplMain.Fields]] [[ if .Comment]]  COMMENT ON COLUMN [[$TableName]].[[ .Name ]] IS '[[ .Comment ]]';  [[end]]
+[[ end]]
+
+-- комментарий к таблице
+[[ if .TmplMain.TableComment]] COMMENT ON TABLE [[$TableName]] IS '[[.TmplMain.TableComment]]'; [[end]]
 
 [[- range $e := .TmplMain.FkConstraints]]
 ALTER TABLE [[ $TableName ]] DROP CONSTRAINT IF EXISTS [[.Name]];
@@ -69,7 +76,7 @@ CREATE [[if .Unique]]UNIQUE[[end]] INDEX IF NOT EXISTS [[.Name]] ON [[$TableName
 [[ define "docFld_enum" ]]
 [[- $Fld := index . "Fld" -]]
 [[- $enumName := printf "%s_%s" .DocTypeUnderscore (camelToSnake $Fld.Enum.Name) -]]
-[[- $Fld.Name ]] [[$enumName]] DEFAULT '[[$Fld.Enum.Default]]' :: [[$enumName]]
+[[- $Fld.Name ]] [[$enumName]] [[if $Fld.Enum.Default]] DEFAULT '[[$Fld.Enum.Default]]' :: [[$enumName]] [[end]]
 [[- end -]]
 
 

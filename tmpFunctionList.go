@@ -23,7 +23,10 @@ func processFileFunctionList(path string) (err error) {
 		for i, res := range data {
 			arr[i] = res.(string)
 		}
-		docModels.Funcs = &arr
+		if docModels.Funcs == nil {
+			docModels.Funcs = &[]string{}
+		}
+		*docModels.Funcs = append(*docModels.Funcs, arr...)
 	}
 
 	return
