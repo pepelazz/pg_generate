@@ -1,2 +1,7 @@
 .idea/
 *.iml
+generate_full.sql
+generate_func.sql
+generate_query.sql
+generate_schema.sql
+generate_view.sql
