@@ -127,6 +127,10 @@ func readConfigFile() {
 	config.Password = getFld("postgres.password")
 	config.DbName = getFld("postgres.dbName")
 	config.Host = getFld("postgres.host")
+	if len(os.Getenv("PG_HOST")) > 0 {
+		// перезаписываем имя хоста, если есть глобальная переменная (для docker-compose)
+		config.Host = os.Getenv("PG_HOST")
+	}
 	config.Port = tree.Get("postgres.port").(int64)
 	if len(os.Getenv("PG_PORT")) > 0 {
 		// перезаписываем порт, если есть глобальная переменная (для docker-compose)
@@ -136,6 +140,7 @@ func readConfigFile() {
 		}
 		config.Port = port
 	}
+
 	config.ModelDir = getArrayFld("postgres.modelDir")
 	config.ViewDir = getArrayFld("postgres.viewDir")
 	config.TemplateDir = getArrayFld("postgres.templateDir")
@@ -149,6 +154,7 @@ func readConfigFile() {
 // функция создания базы данных (если не существует)
 func createDb() {
 	dbinfo := fmt.Sprintf("postgres://%s:%s@%s:%v/%s?sslmode=disable", config.User, config.Password, config.Host, config.Port, "template1")
+	println("pg_generate dbinfo:", dbinfo)
 	db, err := sql.Open("postgres", dbinfo)
 	err = db.Ping()
 	checkErr(err, "Can't connect to postgres. Maybe wrong port.")
