@@ -48,6 +48,14 @@ func generateSqlInitData() ([]byte, error) {
 	return tmplBytes.Bytes(), nil
 }
 
+func generateSqlMutations() ([]byte, error) {
+	var tmplBytes bytes.Buffer
+	if err := sqlFuncTml.ExecuteTemplate(&tmplBytes, "mutations.sql", nil); err != nil {
+		return nil, errors.New(fmt.Sprintf("ExecuteTemplate file mutations.sql. Error: %s", err))
+	}
+	return tmplBytes.Bytes(), nil
+}
+
 // функция сборки sql шаблонов для postgres функций
 func buildSqlFuncTmpl() (err error) {
 	funcs := template.FuncMap{"joinWithQuotes": joinWithQuotes}

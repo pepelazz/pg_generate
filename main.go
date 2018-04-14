@@ -93,6 +93,10 @@ func main(isPrintFiles bool) {
 	checkErr(err, "generateSqlTriggers")
 
 	// Шаг3.6: импорт начальных данных
+	resultMutations, err := generateSqlMutations()
+	checkErr(err, "generateSqlMutations")
+
+	// Шаг3.7: импорт начальных данных
 	resultInitData, err := generateSqlInitData()
 	checkErr(err, "generateSqlInitData")
 
@@ -101,6 +105,7 @@ func main(isPrintFiles bool) {
 	result = append(result, resultView...)
 	result = append(result, resultFunc...)
 	result = append(result, resultTriggers...)
+	result = append(result, resultMutations...)
 	result = append(result, resultInitData...)
 	if isPrintFiles {
 		ioutil.WriteFile("generate_full.sql", result, 0644)
