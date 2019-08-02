@@ -12,6 +12,7 @@ type TmplMain struct {
 	Tree          *toml.Tree
 	Enums         map[string][]string
 	TableName     string
+	TableExt      string
 	TableComment  string
 	Fields        []TableField
 	FkConstraints []FkConstraints
@@ -61,14 +62,13 @@ type Trigger struct {
 }
 
 type AlterScript struct {
-	Name    string
+	Name string
 }
 
 type DocRight struct {
 	Method string
 	Allow  []string
 }
-
 
 //прасинг файла с main.toml
 func processFileMain(path string) (err error) {
@@ -80,7 +80,7 @@ func processFileMain(path string) (err error) {
 		}
 		return
 	}
-	t := TmplMain{Tree:tree}
+	t := TmplMain{Tree: tree}
 
 	if !t.Tree.Has("docType") {
 		return errors.New(fmt.Sprintf("Uknown docType in file %s. Write docType name in file.", path))
@@ -92,6 +92,7 @@ func processFileMain(path string) (err error) {
 
 	t.createDocIfNotExist()
 	t.fillTableName()
+	t.fillTableExt()
 	t.fillTableComment()
 	t.fillEnums()
 	t.fillFields()
@@ -114,7 +115,7 @@ func (t *TmplMain) createDocIfNotExist() {
 		_, ok := docModels.Docs[t.DocType]
 		if !ok {
 			docModels.Docs[t.DocType] = &Doc{
-				DocType: t.DocType,
+				DocType:  t.DocType,
 				TmplMain: t,
 			}
 		} else {
@@ -140,6 +141,12 @@ func (t *TmplMain) fillTableName() {
 		t.TableName = t.Tree.Get("tableName").(string)
 	} else {
 		checkErr(errors.New(fmt.Sprintf("In doc:'%s' missed field 'tableName'", t.DocType)), "")
+	}
+}
+
+func (t *TmplMain) fillTableExt() {
+	if t.Tree.Has("tableExtension") {
+		t.TableExt = t.Tree.Get("tableExtension").(string)
 	}
 }
 
@@ -221,7 +228,7 @@ func (t *TmplMain) fillIndex() {
 			r := res.ToMap()
 			tf := TableIndex{
 				Name: r["name"].(string),
-				Fld: castArrInterfaceToArrString(r["fld"].([]interface{})),
+				Fld:  castArrInterfaceToArrString(r["fld"].([]interface{})),
 			}
 			if res.Has("unique") {
 				tf.Unique = r["unique"].(bool)
@@ -245,10 +252,10 @@ func (t *TmplMain) fillTriggers() {
 		for i, res := range data {
 			r := res.ToMap()
 			tf := Trigger{
-				Name: r["name"].(string),
+				Name:     r["name"].(string),
 				FuncName: r["funcName"].(string),
-				When: r["when"].(string),
-				Ref: r["ref"].(string),
+				When:     r["when"].(string),
+				Ref:      r["ref"].(string),
 			}
 			arr[i] = tf
 		}

@@ -1,0 +1,12 @@
+
+[postgres]
+user = "postgres"
+password = "ktulhu77"
+dbName = "test"
+host = "localhost"
+port = 5432
+#modelDir = ["./sql/edubot/model"]
+modelDir = ["./sql/edubot/model", "./sql/shashlikoff/model"]
+#templateDir = ["./sql/edubot/template"]
+templateDir = ["./sql/edubot/template", "./sql/shashlikoff/template"]
+viewDir = ["./sql/edubot/view"]
