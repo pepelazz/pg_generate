@@ -1,12 +1,13 @@
 package pgGenerate
 
 import (
-	"path/filepath"
-	"os"
-	"log"
-	"strings"
 	"fmt"
 	"github.com/pkg/errors"
+	"log"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
 )
 
 //функция чтения файлов из директории с моделями
@@ -32,7 +33,11 @@ func readTomlModelDir() filepath.WalkFunc {
 //функция выбора функций парсинга toml файла
 func selectTomlReaderForFile(path string) (err error) {
 	// разбираем строку path для извлечения имени файла
-	pathSlice := strings.Split(path, "/")
+	pathSeparator := "/"
+	if  runtime.GOOS == "windows" {
+		pathSeparator = "\\"
+	}
+	pathSlice := strings.Split(path, pathSeparator)
 	fullFileName := pathSlice[len(pathSlice) - 1:][0]
 	fileName := strings.Split(fullFileName, ".")[0]
 	// выбор функции парсинга в зависимости от имени файла
