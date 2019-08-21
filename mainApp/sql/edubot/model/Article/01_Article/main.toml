@@ -1,0 +1,12 @@
+docType = "Article"
+
+tableName ="article.article"
+
+fields = [
+    {name="id",                 type="serial"},
+    {name="title",              type="text",         ext="not null"}
+]
+
+methods = [
+    "article_list"
+]

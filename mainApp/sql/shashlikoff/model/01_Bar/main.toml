@@ -1,0 +1,41 @@
+docType = "Bar"
+tableComment = "Бар сети"
+
+tableName ="bar"
+
+fields = [
+    {name="id",                 type="serial"},
+    {name="title",              type="char", size=200,      ext="not null", comment="название бара"},
+    {name="city",               type="char", size=100,      ext="not null", comment="город"},
+    {name="address",            type="text",                ext="not null", comment="адрес"},
+    {name="sort_index",         type="int",                                 comment="индекс сортировки"},
+    {name="positions",          type="text[]",                              comment="список должностей в этом баре"},
+    {name="updated_at",         type="timestamp",   ext="without time zone"},
+    {name="created_at",         type="timestamp",   ext="without time zone"},
+    {name="deleted",            type="bool",        ext="not null default false"},
+]
+
+fkConstraints = [
+    {name="address_for_this_city_exist", ext="UNIQUE (city, address)"},
+]
+
+triggers = [
+    {name="bar_created", when="before insert or update", ref="for each row", funcName="builtin_fld_update"},
+]
+
+methods = [
+    "bar_list",
+    "bar_list_for_chief",
+    "bar_list_upsert",
+    "bar_chief_upsert",
+    "bar_delete",
+    "bar_user_remove",
+    "bar_user_add",
+    "bar_user_transfer",
+    "bar_user_change_position",
+    "bar_user_make_chief",
+]
+
+
+
+

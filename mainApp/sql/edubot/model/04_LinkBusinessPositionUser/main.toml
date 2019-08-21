@@ -1,0 +1,17 @@
+#-- Связь пользователь - место работы
+docType = "LinkBusinessPositionUser"
+
+tableName ="link_business_position_user"
+
+fields = [
+    {name="id",          type="serial"},
+    {name="user_id",     type="int",        ext="not null"},
+    {name="position_id", type="int",        ext="not null"},
+    {name="deleted",     type="bool",       ext="not null default false"},
+    {name="",            type="constraint", ext="UNIQUE (user_id, position_id)"}
+]
+
+fkConstraints = [
+    {fld="user_id", ref="\"user\"", fk="id"},
+    {fld="position_id", ref="business_position", fk="id"}
+]

@@ -1,0 +1,28 @@
+# Связь пользователь - место работы, по которому у него есть полномочия прводить авторизацию
+docType = "RbqMessage"
+
+tableName ="rbq_message"
+
+fields = [
+    {name="id",            type="serial"},
+    {name="publisher_id",  type="int",          ext="not null"},
+    {name="subscriber",    type="text",         ext="not null"},
+    {name="message",       type="jsonb",        ext="not null"},
+    {name="state",         type="enum",         enumName="state", default="new"},
+    {name="created_at",    type="timestamp",    ext="with time zone"},
+    {name="updated_at",    type="timestamp",    ext="with time zone"}
+]
+
+fkConstraints = [
+    {fld="publisher_id", ref="\"user\"", fk="id"},
+]
+
+enums = [
+    {name="state", value=["new", "success", "fail"]}
+]
+
+triggers = [
+    {name="rbq_message_created", when="before insert or update", ref="for each row", funcName="builtin_fld_update"},
+    {name="rabbit_send_msg_trigger", when="before insert", ref="for each row", funcName="send_rbq_message"}
+]
+

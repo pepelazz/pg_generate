@@ -1,0 +1,42 @@
+# Разовый опрос
+docType = "Survey"
+
+tableName ="survey"
+
+fields = [
+    {name="id",         type="serial"},
+    {name="state",      type="enum",        enumName="state", default="closed"},
+    {name="title",      type="char", size=120, ext="not null"},
+    {name="options",    type="jsonb"},
+    {name="info_msg",   type="text",        comment="сообщение, которое выводится когда опрос закрыт"},
+    {name="sort_index", type="int",         ext="not null"},
+     {name="serial",    type="int[]",       ext="DEFAULT '{8, 15}'"},
+    {name="created_at", type="timestamp",   ext="without time zone"},
+    {name="updated_at", type="timestamp",   ext="without time zone"},
+    {name="deleted",    type="bool",        ext="not null default false"},
+]
+
+enums = [
+    {name="state", value=["opened", "closed"]}
+]
+
+indexes = [
+    {name="survey_title", fld=["title"], unique=true, where="info_msg IS NULL"}
+]
+
+triggers = [
+    {name="survey_created", when="before insert or update", ref="for each row", funcName="builtin_fld_update"},
+    {name="survey_rbq_event", when="after insert or update", ref="for each row", funcName="rabbit_event"}
+]
+
+methods = [
+    "survey_create",
+    "survey_get_all",
+    "survey_get_qstns", # получение вопросов для данного опроса и данного пользователя
+    "survey_save_answer",
+    "survey_update"
+]
+
+rights = [
+    {method="survey_update", allow=["admin"]}
+]
