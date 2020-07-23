@@ -1,23 +1,23 @@
 package pgGenerate
 
 import (
-	"github.com/pelletier/go-toml"
-	"path/filepath"
-	"text/template"
-	"io/ioutil"
-	"fmt"
 	"database/sql"
+	"fmt"
 	"github.com/lib/pq"
-	"os"
+	"github.com/pelletier/go-toml"
+	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 	"strconv"
+	"text/template"
 )
 
 var (
-	config = Config{}
-	docModels = DocModels{Docs: make(map[string]*Doc)}
+	config         = Config{}
+	docModels      = DocModels{Docs: make(map[string]*Doc)}
 	docTypeSortArr = []string{}
-	sqlFuncTml template.Template // темплейты sql функций
+	sqlFuncTml     template.Template // темплейты sql функций
 )
 
 type Config struct {
@@ -37,8 +37,8 @@ type DocModels struct {
 	Schemas *[]string
 	Funcs   *[]string
 	Config  struct {
-			RbqExchangeName string
-		}
+		RbqExchangeName string
+	}
 }
 
 type Doc struct {
@@ -130,7 +130,16 @@ func readConfigFile() {
 	checkErr(err, "Read config.tmpl")
 	config.User = getFld("postgres.user")
 	config.Password = getFld("postgres.password")
+	if len(os.Getenv("PG_PASSWORD")) > 0 {
+		// перезаписываем имя хоста, если есть глобальная переменная (для docker-compose)
+		config.Password = os.Getenv("PG_PASSWORD")
+	}
 	config.DbName = getFld("postgres.dbName")
+	if len(os.Getenv("PG_DBNAME")) > 0 {
+		// перезаписываем имя хоста, если есть глобальная переменная (для docker-compose)
+		config.DbName = os.Getenv("PG_DBNAME")
+	}
+
 	config.Host = getFld("postgres.host")
 	if len(os.Getenv("PG_HOST")) > 0 {
 		// перезаписываем имя хоста, если есть глобальная переменная (для docker-compose)
@@ -254,4 +263,3 @@ func getTomlArray(tree *toml.Tree) func(string) []string {
 		return []string{}
 	}
 }
-
