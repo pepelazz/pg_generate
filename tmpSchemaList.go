@@ -1,14 +1,13 @@
 package pgGenerate
 
 import (
-	"github.com/pelletier/go-toml"
-	"fmt"
-	"github.com/pkg/errors"
-	"text/template"
 	"bytes"
+	"fmt"
+	"github.com/pepelazz/go-toml"
+	"github.com/pkg/errors"
 	"log"
+	"text/template"
 )
-
 
 //прасинг файла с schemaList.toml
 func processFileSchemaList(path string) (err error) {
@@ -39,7 +38,7 @@ func generateSchemaFile() (result []byte, err error) {
 	tmpl := template.New("template").Delims("[[", "]]")
 	// берем шаблон из последней указанной директории, на случай переопределения в конечном проекте
 	lastPath := config.TemplateDir[len(config.TemplateDir)-1]
-	path := fmt.Sprintf("%s/docs/default/schema.sql",lastPath)
+	path := fmt.Sprintf("%s/docs/default/schema.sql", lastPath)
 
 	// функция сборки html темплейтов для данного типа документа (читаем все файлы из указанной директории)
 	_, err = tmpl.ParseFiles(path)
@@ -68,5 +67,3 @@ func generateSchemaFile() (result []byte, err error) {
 
 	return
 }
-
-

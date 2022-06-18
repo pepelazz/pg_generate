@@ -2,7 +2,7 @@ package pgGenerate
 
 import (
 	"fmt"
-	"github.com/pelletier/go-toml"
+	"github.com/pepelazz/go-toml"
 	"github.com/pkg/errors"
 	"strings"
 )

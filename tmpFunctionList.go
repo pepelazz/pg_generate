@@ -1,10 +1,9 @@
 package pgGenerate
 
 import (
-	"github.com/pelletier/go-toml"
 	"fmt"
+	"github.com/pepelazz/go-toml"
 )
-
 
 //прасинг файла с functionList.toml
 func processFileFunctionList(path string) (err error) {
@@ -31,4 +30,3 @@ func processFileFunctionList(path string) (err error) {
 
 	return
 }
-

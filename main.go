@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/lib/pq"
-	"github.com/pelletier/go-toml"
+	"github.com/pepelazz/go-toml"
 	"io/ioutil"
 	"log"
 	"os"
